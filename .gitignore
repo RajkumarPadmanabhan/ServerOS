@@ -1,0 +1,11 @@
+node_modules/
+data/
+storage/
+tmp/
+.testrun/
+.testrun-b/
+.testrun-*/
+*.log
+phone/build/
+phone/debug.keystore
+phone/*.idsig

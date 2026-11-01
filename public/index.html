@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c0e14">
+  <meta name="robots" content="noindex">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ServerOS">
+  <title>ServerOS</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css?v=6">
+</head>
+<body>
+  <div id="bootScreen" class="boot">
+    <p>Opening ServerOS…</p>
+  </div>
+
+  <section id="setupScreen" class="screen hidden">
+    <div class="wrap">
+      <div class="card narrow">
+        <p class="wordmark">ServerOS</p>
+        <h1>Your files, on your devices</h1>
+        <p class="lede">Live files stay on the device you choose, and that device has to be on. After you allow a backup, a smaller copy can be opened from another device that is still on.</p>
+        <div id="ownerBox" class="owner-box hidden">
+          <span class="eyebrow">Owner code</span>
+          <div id="ownerCode" class="owner-code"></div>
+          <p class="small">You will need this code if you create the account from a phone or another computer.</p>
+        </div>
+        <button type="button" id="beHome" class="btn primary block">Keep files on this device</button>
+        <button type="button" id="beNode" class="btn secondary block">Join a ServerOS I already started</button>
+        <form id="joinForm" class="hidden">
+          <label class="stack">Main ServerOS address
+            <input class="field" id="joinHome" autocomplete="url" placeholder="http://192.168.1.20:8787">
+          </label>
+          <label class="stack">Email or username
+            <input class="field" id="joinLogin" autocomplete="username">
+          </label>
+          <label class="stack">Password
+            <input class="field" id="joinPassword" type="password" autocomplete="current-password">
+          </label>
+          <label class="stack">Name for this device
+            <input class="field" id="joinDevice" maxlength="40">
+          </label>
+          <p id="joinError" class="error"></p>
+          <button class="btn primary block" type="submit">Connect this device</button>
+          <p class="small">Use the address shown on the main device. If this is a different computer, do not use localhost.</p>
+        </form>
+        <button type="button" class="btn ghost block js-help">How to use ServerOS</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="authScreen" class="screen hidden auth-stage">
+    <p class="auth-brand">Server<span>OS</span></p>
+    <div class="phone">
+      <div id="loginPanel">
+        <h1>Welcome <span class="accent">Back</span></h1>
+        <p class="auth-sub">Use the same account on every device.</p>
+        <form id="loginForm">
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">@</span>
+            <input class="field auth-input" id="loginId" autocomplete="username" placeholder="Email or username" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+            <button type="button" class="eye js-eye" data-target="loginPassword" aria-label="Show password">Show</button>
+          </label>
+          <button type="button" id="openRecover" class="auth-forgot">Forgot password?</button>
+          <p id="loginError" class="error"></p>
+          <button class="btn primary block" type="submit">Continue</button>
+        </form>
+        <button type="button" id="openLocalReset" class="auth-forgot hidden">Reset password on this device</button>
+        <p class="auth-switch">New here? <button type="button" id="goRegister" class="auth-link">Create an account</button></p>
+      </div>
+
+      <div id="registerPanel" class="hidden">
+        <h1>Create <span class="accent">Account</span></h1>
+        <p id="regIntro" class="auth-sub">This is the first account. It owns this ServerOS.</p>
+        <form id="registerForm">
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">Aa</span>
+            <input class="field auth-input" id="regUsername" autocomplete="username" placeholder="Username" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">@</span>
+            <input class="field auth-input" id="regEmail" type="email" autocomplete="email" placeholder="Email" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="regPassword" type="password" autocomplete="new-password" placeholder="Password" required>
+            <button type="button" class="eye js-eye" data-target="regPassword" aria-label="Show password">Show</button>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="regPassword2" type="password" autocomplete="new-password" placeholder="Confirm password" required>
+            <button type="button" class="eye js-eye" data-target="regPassword2" aria-label="Show password">Show</button>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">#</span>
+            <input class="field auth-input" id="regDevice" maxlength="40" placeholder="Name for this device">
+          </label>
+          <label class="auth-field hidden" id="regOwnerWrap">
+            <span class="auth-ico" aria-hidden="true">#</span>
+            <input class="field auth-input" id="regOwnerCode" inputmode="numeric" autocomplete="off" placeholder="Owner code from the ServerOS window">
+          </label>
+          <p id="regError" class="error"></p>
+          <button class="btn primary block" type="submit">Continue</button>
+        </form>
+        <p class="auth-switch">Already have an account? <button type="button" id="goLogin" class="auth-link">Log in</button></p>
+        <button type="button" id="backSetup" class="auth-forgot">Back</button>
+      </div>
+
+      <div id="recoverPanel" class="hidden">
+        <h1>Reset <span class="accent">password</span></h1>
+        <p class="auth-sub">Use the recovery key you saved when you created the account.</p>
+        <form id="recoverForm">
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">@</span>
+            <input class="field auth-input" id="recoverLogin" autocomplete="username" placeholder="Email or username" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">#</span>
+            <input class="field auth-input" id="recoverKey" autocomplete="off" placeholder="Recovery key" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="recoverPassword" type="password" autocomplete="new-password" placeholder="New password" required>
+            <button type="button" class="eye js-eye" data-target="recoverPassword" aria-label="Show password">Show</button>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="recoverPassword2" type="password" autocomplete="new-password" placeholder="Confirm new password" required>
+          </label>
+          <p id="recoverError" class="error"></p>
+          <button class="btn primary block" type="submit">Continue</button>
+        </form>
+        <button type="button" class="auth-forgot js-back-login">Back to log in</button>
+      </div>
+
+      <div id="localPanel" class="hidden">
+        <h1>Reset <span class="accent">here</span></h1>
+        <p class="auth-sub">You are at the device that stores the account, so a recovery key is not needed.</p>
+        <form id="localForm">
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="localPassword" type="password" autocomplete="new-password" placeholder="New password" required>
+          </label>
+          <label class="auth-field">
+            <span class="auth-ico" aria-hidden="true">*</span>
+            <input class="field auth-input" id="localPassword2" type="password" autocomplete="new-password" placeholder="Confirm new password" required>
+          </label>
+          <p id="localError" class="error"></p>
+          <button class="btn primary block" type="submit">Continue</button>
+        </form>
+        <button type="button" class="auth-forgot js-back-login">Back to log in</button>
+      </div>
+      <button type="button" class="auth-forgot js-help">How to use ServerOS</button>
+    </div>
+  </section>
+
+  <section id="nodeScreen" class="screen hidden">
+    <div class="wrap">
+      <div class="card narrow">
+        <p class="wordmark">ServerOS</p>
+        <h1 id="nodeName">This device</h1>
+        <p><span id="nodeStatus" class="status-pill offline">Not connected</span></p>
+        <p id="nodeUser" class="small"></p>
+        <p class="lede">Leave this window open so live files stay reachable. A backup copied to another device can still be opened if this one is off.</p>
+        <div id="nodeBackupBox" class="owner-box">
+          <span class="eyebrow">Backup</span>
+          <p id="nodeBackupText" class="small">Allow file access to make a smaller, lossless copy of the files on this device.</p>
+          <p id="nodeBackupProgress" class="small"></p>
+          <button type="button" id="nodeBackupAllow" class="btn primary block">Allow and back up this device</button>
+          <button type="button" id="nodeBackupStart" class="btn secondary block hidden">Back up now</button>
+          <button type="button" id="nodeBackupAndroid" class="btn secondary block hidden">Allow phone storage</button>
+          <div id="nodeBackupList"></div>
+        </div>
+        <p class="url-line" id="nodeHome"></p>
+        <p><a id="openHome" class="btn primary" href="#">Open my files</a></p>
+        <p id="nodeError" class="error"></p>
+        <form id="rejoinForm">
+          <label class="stack">Main ServerOS address
+            <input class="field" id="rejoinHome" autocomplete="url">
+          </label>
+          <label class="stack">Email or username
+            <input class="field" id="rejoinLogin" autocomplete="username">
+          </label>
+          <label class="stack">Password
+            <input class="field" id="rejoinPassword" type="password" autocomplete="current-password">
+          </label>
+          <label class="stack">Name for this device
+            <input class="field" id="rejoinDevice" maxlength="40">
+          </label>
+          <p id="rejoinError" class="error"></p>
+          <button class="btn secondary block" type="submit">Connect again</button>
+        </form>
+        <button type="button" id="leaveBtn" class="btn ghost block">Disconnect this device</button>
+        <button type="button" class="btn ghost block js-help">How to use ServerOS</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="appScreen" class="screen hidden app-shell">
+    <aside class="nav">
+      <p class="wordmark">ServerOS</p>
+      <input id="search" class="field nav-search" type="search" placeholder="Search this folder">
+      <p class="nav-label">Menu</p>
+      <button type="button" id="navDash" class="nav-btn nav-on">Dashboard</button>
+      <button type="button" id="navFiles" class="nav-btn">Files</button>
+      <button type="button" id="backupBtn" class="nav-btn">Backups</button>
+      <button type="button" id="accountBtn" class="nav-btn">Account</button>
+      <div class="nav-spacer"></div>
+      <div class="storage-card">
+        <span class="eyebrow">On your devices</span>
+        <strong id="storageLine">0 B</strong>
+        <p id="storageMeta" class="small">No files yet</p>
+      </div>
+      <p class="small">Signed in as <strong id="whoami"></strong></p>
+      <button type="button" class="btn ghost block js-help">How to use</button>
+      <button type="button" id="logoutBtn" class="btn ghost block">Log out</button>
+    </aside>
+    <div class="workspace">
+      <p id="statusBanner" class="banner"></p>
+
+      <div id="dashView">
+        <div class="view-head">
+          <div>
+            <h1>Devices</h1>
+            <p class="lede">Every phone and computer linked to this ServerOS.</p>
+          </div>
+        </div>
+        <div class="dash-layout">
+          <div class="map-card">
+            <div id="deviceList" class="device-map-host"></div>
+          </div>
+          <aside class="detail-card">
+            <div id="deviceDetail"></div>
+            <div class="stat-actions">
+              <button type="button" id="openFilesBtn" class="btn primary block">Open files</button>
+              <button type="button" id="renameDeviceBtn" class="btn secondary block">Rename device</button>
+              <button type="button" id="removeDeviceBtn" class="btn ghost block">Remove device</button>
+            </div>
+            <div class="connect-box">
+              <span class="eyebrow">Open on another device</span>
+              <p class="small">On a phone, open this address in the browser, then choose Add to Home Screen.</p>
+              <p class="url-line" id="connectPrimary"></p>
+              <div id="urlList"></div>
+              <button type="button" id="copyLink" class="btn secondary">Copy address</button>
+              <img id="qrImage" class="qr hidden" alt="QR code for this ServerOS">
+              <p id="connectNote" class="small"></p>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div id="filesView" class="hidden">
+        <div class="files-layout">
+          <div class="upload-col">
+            <h2>Upload</h2>
+            <p class="small">New files are saved on the device selected in the dashboard.</p>
+            <div id="dropZone" class="drop">
+              <p class="drop-title">Drop files here</p>
+              <p class="small">or choose them from this device</p>
+              <div class="toolbar">
+                <label class="btn primary" for="fileInput">Upload files</label>
+                <input id="fileInput" class="sr-only" type="file" multiple>
+                <label class="btn secondary" for="folderInput">Upload folder</label>
+                <input id="folderInput" class="sr-only" type="file" multiple webkitdirectory directory>
+              </div>
+            </div>
+            <div id="progressWrap" class="progress-wrap hidden">
+              <div id="progressLabel" class="small"></div>
+              <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+            </div>
+            <div class="toolbar">
+              <button type="button" id="newFolderBtn" class="btn secondary">New folder</button>
+              <button type="button" id="newNoteBtn" class="btn secondary">New note</button>
+            </div>
+            <h2 class="section-title">Files in this folder</h2>
+            <div id="fileList"></div>
+          </div>
+          <div class="arranged">
+            <div class="view-head">
+              <div>
+                <h2 id="filesTitle">Files</h2>
+                <p id="filesNote" class="small"></p>
+                <div id="crumbs" class="crumbs"></div>
+              </div>
+              <div class="toolbar">
+                <button type="button" id="upBtn" class="btn secondary">Up</button>
+                <button type="button" id="refreshBtn" class="btn secondary">Refresh</button>
+                <label class="sort-label">Sort
+                  <select id="sortFiles" class="field sort-field">
+                    <option value="name">Name</option>
+                    <option value="size">Size</option>
+                    <option value="new">Newest</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div id="folderGrid" class="folder-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="backupView" class="hidden panel">
+        <h2>Backups</h2>
+        <p id="backupScope" class="small"></p>
+        <p class="small">Compression keeps documents smaller and does not reduce photo or video quality. Copies stored on another device that is still on can be opened when this one is off.</p>
+        <p id="backupProgress" class="small"></p>
+        <div id="backupProgressWrap" class="progress-wrap hidden">
+          <div class="progress"><div id="backupProgressBar" class="progress-bar"></div></div>
+        </div>
+        <div class="toolbar">
+          <button type="button" id="backupAllow" class="btn primary">Allow and back up my files</button>
+          <button type="button" id="backupStart" class="btn primary hidden">Back up now</button>
+          <button type="button" id="backupAndroid" class="btn secondary hidden">Allow phone storage</button>
+          <button type="button" id="backupBack" class="btn ghost">Back to files</button>
+        </div>
+        <p id="backupError" class="error"></p>
+        <div id="backupList"></div>
+        <div id="backupCrumbs" class="crumbs"></div>
+        <div id="backupFiles"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="card modal-card">
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="card modal-card help">
+      <h2>How to use ServerOS</h2>
+      <ol>
+        <li>Leave ServerOS running on the device that should keep the files. You may close the browser tab. Do not close the ServerOS window.</li>
+        <li>On your phone, tablet, or another computer, open the address shown in ServerOS.</li>
+        <li>Log in with your account. Another person can create their own login and still open the owner's files. Their files stay separate.</li>
+        <li>Upload files from any of those devices. They are saved on the device you picked.</li>
+        <li>Live files open only while the device that has them is on. A backup that was copied to another device can still be opened when the original is off.</li>
+        <li>To keep files on a second computer too, install ServerOS there and choose “Join a ServerOS I already started”.</li>
+        <li>Old phones and tablets do not need an app store. Open the address in the browser, then use Add to Home Screen.</li>
+        <li>An Android phone can be the backup device if Node.js is installed in Termux. It asks Android for storage permission first. An iPhone can open and upload files, but it cannot stay on as the server.</li>
+      </ol>
+      <p>Your password stops other people on the network from opening the files. The files themselves sit on your device. Use ServerOS on a network you trust.</p>
+      <p>If you forget the password, use the recovery key you saved. On the main device you can also reset the password from the login screen.</p>
+      <button type="button" class="btn primary js-close-help">Close</button>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <noscript><p style="padding:24px">ServerOS needs JavaScript. Turn it on in the browser, then reload this page.</p></noscript>
+  <script src="/app.js?v=9"></script>
+</body>
+</html>
